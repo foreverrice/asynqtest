@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+
+  #asynqmon asynq延迟队列、定时队列的webui
+  asynqmon:
+    image: hibiken/asynqmon:latest
+    container_name: asynqmon_asynq
+    ports:
+      - 18980:8080
+    command:
+      - '--redis-addr=redis:6379'
+      - '--redis-password=G62m50oigInC30sf'
+    restart: always
+    networks:
+      - asynqtest_net
+    depends_on:
+      - redis
+
+
+  #redis容器
+  redis:
+    image: redis:6.2.5
+    container_name: redis_asynq
+    ports:
+      - 63779:6379
+    environment:
+      # 时区上海
+      TZ: Asia/Shanghai
+    volumes:
+      # 数据文件
+      - ./data/redis/data:/data:rw
+    command: "redis-server --requirepass G62m50oigInC30sf  --appendonly yes"
+    privileged: true
+    restart: always
+    networks:
+      - asynqtest_net
+
+
+networks:
+  asynqtest_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/16
